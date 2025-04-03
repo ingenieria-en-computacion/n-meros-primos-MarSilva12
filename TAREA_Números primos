@@ -1,0 +1,54 @@
+section .bss
+    num resb 12
+
+section .text
+global _start
+
+_start:
+    call scan_num  ; Leer número desde entrada estándar
+    mov ebx, eax  ; Guardar número en EBX para comprobaciones
+    call is_prime ; Comprobar si es primo
+    call print_newline
+    call exit_program
+
+; ----------------------------------------------------------
+; is_prime - Verifica si un número es primo
+; Entrada: EBX = número a verificar
+; Salida: EAX = 1 si es primo, 0 si no lo es
+; ----------------------------------------------------------
+is_prime:
+    cmp ebx, 2          ; Si el número es menor que 2, no es primo
+    jl .not_prime
+    cmp ebx, 2          ; 2 es primo
+    je .prime
+    test ebx, 1         ; Comprobar si el número es par
+    jz .not_prime
+
+    mov ecx, 3          ; Iniciar divisor en 3
+.check_loop:
+    mov eax, ebx        ; Copiar número a EAX
+    cdq                 ; Extender signo en EDX
+    div ecx             ; EAX / ECX, residuo en EDX
+    test edx, edx       ; Si el residuo es 0, no es primo
+    jz .not_prime
+    add ecx, 2          ; Siguiente número impar
+    cmp ecx, ebx        ; Si ECX >= número, terminamos
+    jl .check_loop
+
+.prime:
+    mov eax, 1          ; Marcar como primo
+    call print_num      ; Imprimir 1 (primo)
+    ret
+
+.not_prime:
+    mov eax, 0          ; Marcar como no primo
+    call print_num      ; Imprimir 0 (no primo)
+    ret
+
+; ----------------------------------------------------------
+; exit_program - Salir del programa limpiamente
+; ----------------------------------------------------------
+exit_program:
+    mov eax, 1   ; Código de salida
+    xor ebx, ebx ; Código de retorno 0
+    int 0x80
